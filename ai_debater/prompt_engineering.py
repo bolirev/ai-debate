@@ -44,13 +44,13 @@ class CoStar(ABC):
     
     def response_is_valid(self, response: str) -> bool:
         try:
-            self.response2dataframe(response)
+            self.response2output(response)
         except Exception:
             return False
         return True
 
     @abstractmethod
-    def response2dataframe(self, response: str) -> Optional[Union[pd.DataFrame, pd.Series]]: ...
+    def response2output(self, response: str) -> Optional[Union[pd.DataFrame, pd.Series, str]]: ...
 
 
 @dataclass
@@ -88,7 +88,7 @@ Assume a readership with varying levels of experience in debate and a desire to 
 <Topic><Subject></Subject><Rational></Rational></Topic>
 """
     
-    def response2dataframe(self, response: str) -> Optional[Union[pd.DataFrame, pd.Series]]:
+    def response2output(self, response: str) -> Optional[Union[pd.DataFrame, pd.Series, str]]:
         data = xmltodict.parse(self.wrap_xmlresponse(response))
         df = pd.DataFrame(data['data']).Topic.apply(pd.Series)
         df.index.name = 'ith_topic'
@@ -123,8 +123,10 @@ Assume a diverse audience with varying levels of knowledge and interest in the t
 """
 A one paragraph argument
 """
-    def response2dataframe(self, response: str) -> Optional[Union[pd.DataFrame, pd.Series]]:
-        return None
+    def response2output(self, response: str) -> Optional[Union[pd.DataFrame, pd.Series, str]]:
+        if len(response):
+            return response
+        raise NameError("Response is empty")
 
 
 @dataclass
@@ -206,7 +208,7 @@ Assume a readership with a background in debate or a keen interest in developing
 <Team><Team_ID></Team_ID><Score max_score="100"></Score><Rational></Rational></Team>
 </TeamworkAndRoles>
 """
-    def response2dataframe(self, response: str) -> Optional[Union[pd.DataFrame, pd.Series]]:
+    def response2output(self, response: str) -> Optional[Union[pd.DataFrame, pd.Series, str]]:
         data = xmltodict.parse(self.wrap_xmlresponse(response))['data']
         df = pd.DataFrame(data).loc['Team'].explode().apply(pd.Series)
         df['Score'] = df.Score.apply(lambda x: float(x['#text'])/float(x['@max_score']))
@@ -241,7 +243,7 @@ Your objective is to evaluate which judge judgment is most appropriate.
 """
 <JudgeID></JudgeID>
 """
-    def response2dataframe(self, response: str) -> Optional[Union[pd.DataFrame, pd.Series]]:
+    def response2output(self, response: str) -> Optional[Union[pd.DataFrame, pd.Series, str]]:
         data = xmltodict.parse(self.wrap_xmlresponse(response))['data']
         df = pd.Series(data)
         return df

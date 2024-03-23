@@ -1,19 +1,19 @@
 from typing import Dict, List, Union
-from openai import OpenAI
+from mistralai.client import MistralClient
+from mistralai.models.chat_completion import ChatMessage
 from datetime import datetime
-import os
 from ai_debater.models.abstractai_chatter import BaseAiChatter
 
-class OpenAIChatter(BaseAiChatter):
+
+class MistralAIChatter(BaseAiChatter):
     def __init__(self, api_key: str):
-        self._client = OpenAI(api_key = api_key)
-        self.model = 'gpt-4'
+        self._client = MistralClient(api_key=api_key)
+        self.model = "mistral-large-latest"
         self._timestamp = datetime.now()
         
     @property
     def model_entity(self) -> str:
-        return self.__class__.__name__+'|'+self._model
-
+        return self.__class__.__name__+'|'+self.model
     @property
     def model(self) -> str:
         return self._model
@@ -34,7 +34,8 @@ class OpenAIChatter(BaseAiChatter):
     def answer(self, messages: List[Dict[str,str]] = []) -> str:
         messages = messages.copy()
         messages.insert(0, {"role": "user", "content": self.init_prompt})
-        chat_completion = self._client.chat.completions.create(
+        messages = [ChatMessage(**m) for m in messages]
+        chat_completion = self._client.chat(
             model=self._model,
             messages=messages)
         if chat_completion.choices:
