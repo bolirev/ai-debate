@@ -88,3 +88,24 @@ class IODataBase():
             """
             dim_judgements = pd.read_sql(sql_statement, self.connection)
         return dim_judgements
+    
+    def load_judgements(self):
+        judgements = None
+        if 'fact_judgements' in self.table_names.tbl_name.values:
+            sql_statement = \
+            """
+            SELECT
+                fact.*,
+                dim.*,
+                model_infos.model_entity AS judge_entity,
+                team.model_entity AS team_entity
+            FROM 'fact_judgements' AS fact
+            LEFT JOIN 'dim_judgements' as dim
+                USING (judgement_id)
+            LEFT JOIN 'model_infos' as model_infos
+                ON dim.model_id_judging = model_infos.model_id
+            LEFT JOIN 'model_infos' AS team
+                ON fact.Team_ID = team.model_id
+            """
+            judgements = pd.read_sql(sql_statement, self.connection)
+        return judgements

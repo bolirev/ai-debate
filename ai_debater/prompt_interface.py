@@ -7,6 +7,8 @@ def topic2message(topic) -> Dict[str, str]:
 def discourse2messages(discourse: List[str], for_opponent: bool = False) -> List[str]:
     messages = []
     modulo = 0 if for_opponent else 1
+    if for_opponent:
+        messages.append({"role": "system", "content": "Ok, I understood"})
     for iii, d in enumerate(discourse):
         role = "user" if (iii%2)==modulo else "system"
         messages.append({"role": role, "content": d})
