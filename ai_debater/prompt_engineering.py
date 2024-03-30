@@ -230,7 +230,7 @@ Your objective is to evaluate which judge judgment is most appropriate.
     JudgesContext().input_format + \
 """
 <Verdict>
-<Judge_ID></Judge_ID>
+<Judgement_ID></Judgement_ID>
 """ \
     + JudgesContext().response_format + \
 """
@@ -241,9 +241,10 @@ Your objective is to evaluate which judge judgment is most appropriate.
 """ 
     response_format = \
 """
-<JudgeID></JudgeID>
+<Judgement_ID></Judgement_ID>
 """
     def response2output(self, response: str) -> Optional[Union[pd.DataFrame, pd.Series, str]]:
         data = xmltodict.parse(self.wrap_xmlresponse(response))['data']
         df = pd.Series(data)
+        df = pd.Series(data=df.loc["Judgement_ID"], index=["Judgement_ID"])
         return df
